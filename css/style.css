@@ -1,0 +1,184 @@
+/* Tooltip Styles */
+.cpp-tooltip-trigger {
+    position: relative;
+    cursor: help;
+    color: #0073aa;
+    font-size: 20px;
+    text-align: left;
+}
+
+.cpp-tooltip-trigger:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d425c;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Literata';
+    line-height: 1.5;
+    white-space: normal;
+    min-width: 200px;
+    max-width: 600px;
+    width: max-content;
+    z-index: 1000;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.cpp-tooltip-trigger:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+}
+
+/* Alternative tooltip content for JavaScript handling */
+.cpp-tooltip-content {
+    text-align: left;
+    display: none;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    min-width: 200px;
+    max-width: 350px;
+    width: max-content;
+    z-index: 1000;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    word-wrap: break-word;
+}
+
+/* Learn More Button Styles */
+.cpp-learn-more-btn {
+    transition: all 0.2s ease;
+}
+
+.cpp-learn-more-btn:hover {
+    color: #005177 !important;
+}
+
+.cpp-learn-more-btn.expanded .dashicons {
+    transform: rotate(90deg);
+}
+
+/* Explanation Content Styles */
+.cpp-explanation-content {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced Checkbox Styling */
+.cpp-wizard-main input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #d5a848;
+}
+
+/* PDF Preview Scroll Enhancement */
+.pdf-preview-scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+/* Smooth scrolling for better UX */
+.pdf-preview-scroll-container {
+    scroll-behavior: smooth;
+}
+
+/* Page navigation helper (if needed for future enhancement) */
+.pdf-page-navigator {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+    z-index: 10;
+}
+
+/* Dashboard table button styling - more specific selectors */
+table.cpp-plan-dashboard tbody td a.button,
+table.cpp-plan-dashboard td a.button {
+    font-size: 14px !important;
+    padding: 3px 6px !important;
+    margin: 1px 3px !important;
+    color: #333 !important;
+    background: #f7f7f7 !important;
+    border: 1px solid #ccc !important;
+    border-radius: 3px !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    min-width: auto !important;
+    height: auto !important;
+    box-shadow: none !important;
+}
+
+table.cpp-plan-dashboard tbody td a.button:hover,
+table.cpp-plan-dashboard td a.button:hover {
+    background: #d6b874 !important;
+    color: #000 !important;
+    border-color: #999 !important;
+    text-decoration: none !important;
+}
+
+/* Specific spacing adjustments */
+table.cpp-plan-dashboard td a.button:first-child {
+    margin-left: 0 !important;
+}
+
+table.cpp-plan-dashboard td a.button:last-child {
+    margin-right: 0 !important;
+}
+
+/* Remove WordPress default button styling for these specific buttons */
+table.cpp-plan-dashboard td a.button:not(.button-primary):not(.button-secondary) {
+    background-color: #d6b874 !important;
+    border-color: #ccc !important;
+    color: #333 !important;
+}
+
+/* Responsive tooltip for mobile */
+@media (max-width: 768px) {
+    .cpp-tooltip-trigger:hover::after {
+        position: fixed;
+        bottom: auto;
+        left: 20px;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: none;
+        min-width: auto;
+        width: auto;
+    }
+
+    .cpp-tooltip-trigger:hover::before {
+        display: none;
+    }
+}
