@@ -81,7 +81,7 @@ function cpp_get_wizard_steps()
     return [
         1 => [
             'slug' => 'demographics',
-            'title' => 'Demographics',
+            'title' => 'Employer Info',
             'fields' => [
                 [
                     'type' => 'text',
@@ -740,7 +740,29 @@ function cpp_render_upgrade_flow($atts = [])
         return '<p>This plan already uses the latest template version.</p>';
     }
 
-    // Get user’s plan options
+    // Handle step navigation
+    $current_step = isset($_POST['upgrade_step']) ? intval($_POST['upgrade_step']) : 1;
+    if (isset($_GET['step'])) {
+        $current_step = intval($_GET['step']);
+    }
+
+    // Define upgrade steps
+    $upgrade_steps = [
+        1 => [
+            'slug' => 'sectional-redline',
+            'title' => 'Sectional Redline',
+        ],
+        2 => [
+            'slug' => 'full-document',
+            'title' => 'Full Document Preview',
+        ],
+        3 => [
+            'slug' => 'esignature',
+            'title' => 'E-Signature & Adoption',
+        ],
+    ];
+
+    // Get user's plan options
     $plan_options_str = get_post_meta($plan_id, '_cpp_plan_options', true);
     $plan_options = array_filter(explode(',', $plan_options_str));
 
@@ -750,7 +772,6 @@ function cpp_render_upgrade_flow($atts = [])
         $old = isset($all_versions[$current_version]['components'][$opt]) ? $all_versions[$current_version]['components'][$opt] : '';
         $new = isset($all_versions[$latest_version]['components'][$opt]) ? $all_versions[$latest_version]['components'][$opt] : '';
         $redlines[$opt] = cpp_dmp_word_diff(strip_tags($old), strip_tags($new));
-
     }
 
     // Handle form POST (adoption)
@@ -788,55 +809,195 @@ function cpp_render_upgrade_flow($atts = [])
         }
     }
 
+    // Handle step navigation
+    if (isset($_POST['upgrade_step'])) {
+        $desiredStep = intval($_POST['upgrade_step']);
+        if ($desiredStep >= 1 && $desiredStep <= count($upgrade_steps)) {
+            $current_step = $desiredStep;
+        }
+    }
+
     ob_start();
 
-    // Place this after ob_start();
-    $company_name = get_post_meta($plan_id, '_cpp_company_name', true);
-    $effective_date = get_post_meta($plan_id, '_cpp_effective_date', true);
-    $plan_options_selected = $plan_options;
-
+    // Build template data
     $template_data = cpp_get_template_versions();
-    $old_html = cpp_build_full_doc_html($plan_id, $template_data, $current_version, false);
-    $new_html = cpp_build_full_doc_html($plan_id, $template_data, $latest_version, false);
     $sectional_redline = cpp_build_full_doc_html($plan_id, $template_data, $latest_version, true, $current_version, true);
 
-
     ?>
-    <div class="cpp-upgrade-wrapper" style="padding: 32px; margin: 40px auto; max-width: 860px;">
+    <style>
+        .cpp-progress-tracker {
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #DFEDF8;
+            border: 1px solid;
+            padding: 20px 0 0 0;
+            box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.07);
+            margin-bottom: 32px;
+        }
+
+        .cpp-progress-list {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .cpp-progress-step {
+            position: relative;
+            flex: 1 1 0;
+            min-width: 120px;
+            color: #3f444b;
+        }
+
+        .cpp-progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: 24px;
+            width: 60px;
+            height: 3px;
+            background: #D6B874;
+            z-index: 0;
+        }
+
+        .cpp-progress-circle {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            border-radius: 50%;
+            background: #2d425c;
+            border: 2px solid #3f444b;
+            color: #3f444b;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 6px;
+        }
+
+        .cpp-progress-step.active .cpp-progress-circle {
+            background: #D6B874;
+            color: #D6B874;
+            border-color: #D6B874;
+        }
+
+        .cpp-progress-step.completed .cpp-progress-circle {
+            background: #3f444b;
+            color: #D6B874;
+            border-color: #3f444b;
+        }
+
+        .cpp-progress-label {
+            display: block;
+            font-size: 16px;
+            font-family: "Source Serif 4", sans-serif;
+            margin-top: 2px;
+            font-weight: 500;
+            color: #3f444b;
+            white-space: nowrap;
+        }
+
+        .cpp-progress-step.completed .cpp-progress-label {
+            color: #3f444b;
+            opacity: 0.7;
+        }
+
+        .cpp-upgrade-wrapper {
+            padding: 32px;
+            margin: 40px auto;
+            max-width: 860px;
+        }
+    </style>
+
+    <?php
+    // Build progress tracker
+    $total_steps = count($upgrade_steps);
+    ?>
+    <div class="cpp-progress-tracker" style="margin-bottom:32px;">
+        <ul class="cpp-progress-list">
+            <?php foreach ($upgrade_steps as $idx => $step):
+                $is_active = ($idx == $current_step);
+                $is_completed = ($idx < $current_step);
+                ?>
+                <li class="cpp-progress-step <?php
+                echo $is_active ? 'active' : ($is_completed ? 'completed' : '');
+                ?>">
+                    <form method="post" style="display:inline;">
+                        <input type="hidden" name="plan_id" value="<?php echo esc_attr($plan_id); ?>" />
+                        <input type="hidden" name="upgrade_step" value="<?php echo $idx; ?>" />
+                        <button type="submit" class="cpp-progress-circle"
+                            style="background:none;border:none;cursor:pointer;padding:0;width:32px;height:32px;">
+                            <?php echo $is_completed ? '✓' : $idx; ?>
+                        </button>
+                        <span class="cpp-progress-label"><?php echo esc_html($step['title']); ?></span>
+                    </form>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+
+    <div class="cpp-upgrade-wrapper">
         <h2>Cafeteria Plan Amendment Adoption</h2>
         <p>Your current plan uses <strong><?php echo esc_html($all_versions[$current_version]['label']); ?></strong>. The
             latest version is <strong><?php echo esc_html($all_versions[$latest_version]['label']); ?></strong>.</p>
-        <h3>What’s Changed?</h3>
-        <?php foreach ($redlines as $section => $diff_html): ?>
-            <div style="margin-bottom: 32px;">
-                <h4><?php echo esc_html($section); ?></h4>
-                <div class="cpp-redline-section" style="border:1px solid #ccc; padding:12px; background:#f9f9f9;">
-                    <?php echo $diff_html; ?>
+
+        <?php if ($current_step == 1): ?>
+            <h3>Step 1: Sectional Changes</h3>
+            <p>Review the specific changes made to each section of your plan:</p>
+            <?php foreach ($redlines as $section => $diff_html): ?>
+                <div style="margin-bottom: 32px;">
+                    <h4><?php echo esc_html($section); ?></h4>
+                    <div class="cpp-redline-section" style="border:1px solid #ccc; padding:12px; background:#f9f9f9;">
+                        <?php echo $diff_html; ?>
+                    </div>
                 </div>
+            <?php endforeach; ?>
+
+            <form method="post" style="margin-top:32px; text-align: center;">
+                <input type="hidden" name="plan_id" value="<?php echo esc_attr($plan_id); ?>" />
+                <input type="hidden" name="upgrade_step" value="2" />
+                <button type="submit" class="button button-primary">Next: Full Document Preview</button>
+            </form>
+
+        <?php elseif ($current_step == 2): ?>
+            <h3>Step 2: Full Document Preview</h3>
+            <p>Review the complete redlined document with all changes highlighted:</p>
+            <div style="width: 100%; max-width: 950px; margin: 20px auto;">
+                <?php echo $sectional_redline; ?>
             </div>
-        <?php endforeach; ?>
 
+            <form method="post" style="margin-top:32px; text-align: center;">
+                <input type="hidden" name="plan_id" value="<?php echo esc_attr($plan_id); ?>" />
+                <input type="hidden" name="upgrade_step" value="3" />
+                <button type="submit" class="button button-primary">Next: E-Signature & Adoption</button>
+            </form>
 
-        <h3>Full Redline Preview (Entire Document)</h3>
-        <?php echo $sectional_redline; ?>
+        <?php elseif ($current_step == 3): ?>
+            <h3>Step 3: E-Signature & Adoption</h3>
+            <p>Please review and sign to adopt these amendments to your cafeteria plan:</p>
 
-
-
-
-        <form method="post" style="margin-top:32px; border-top: 1px solid #ccc; padding-top:20px;">
-            <?php foreach ($messages as $msg)
-                echo $msg; ?>
-            <label><strong>E-signature:</strong>
-                <input type="text" name="cpp_esignature" placeholder="Full legal name"
-                    style="width:320px; margin-left:12px;" required>
-            </label>
-            <br><br>
-            <label>
-                <input type="checkbox" name="cpp_agree" required> I have read and agree to adopt the above amendments.
-            </label>
-            <br><br>
-            <button type="submit" name="cpp_upgrade_accept" class="button button-primary">Adopt & Sign Amendment</button>
-        </form>
+            <form method="post" style="margin-top:32px; border-top: 1px solid #ccc; padding-top:20px; text-align: center;">
+                <?php foreach ($messages as $msg)
+                    echo $msg; ?>
+                <div style="margin-bottom: 20px;">
+                    <label><strong>E-signature:</strong>
+                        <input type="text" name="cpp_esignature" placeholder="Full legal name"
+                            style="width:320px; margin-left:12px;" required>
+                    </label>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label>
+                        <input type="checkbox" name="cpp_agree" required> I have read and agree to adopt the above amendments.
+                    </label>
+                </div>
+                <button type="submit" name="cpp_upgrade_accept" class="button button-primary">Adopt & Sign Amendment</button>
+            </form>
+        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
