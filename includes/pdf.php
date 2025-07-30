@@ -22,8 +22,11 @@ function cpp_wizard_generate_pdf($caf_plan_id)
     $dompdf = new Dompdf();
 
     // Gather data from postmeta
-    $company_name = get_post_meta($caf_plan_id, '_cpp_company_name', true);
-    $effective_date = get_post_meta($caf_plan_id, '_cpp_effective_date', true);
+    $employer = get_post_meta($caf_plan_id, '_cpp_employer', true);
+    $restatement_effective_date = get_post_meta($caf_plan_id, '_cpp_restatement_effective_date', true);
+    $employer_address = get_post_meta($caf_plan_id, '_cpp_employer_address', true);
+    $claims_administrator = get_post_meta($caf_plan_id, '_cpp_claims_administrator', true);
+    $claims_administrator_address = get_post_meta($caf_plan_id, '_cpp_claims_administrator_address', true);
     $plan_details = get_post_meta($caf_plan_id, '_cpp_plan_details', true);
     $special_req = get_post_meta($caf_plan_id, '_cpp_special_requirements', true);
 
@@ -33,8 +36,11 @@ function cpp_wizard_generate_pdf($caf_plan_id)
     $benefits_arr = array_filter(explode(',', $benefits_str));
 
     // Convert to safe HTML
-    $company_name = esc_html($company_name);
-    $effective_date = esc_html($effective_date);
+    $employer = esc_html($employer);
+    $restatement_effective_date = esc_html($restatement_effective_date);
+    $employer_address = esc_html($employer_address);
+    $claims_administrator = esc_html($claims_administrator);
+    $claims_administrator_address = esc_html($claims_administrator_address);
     $plan_details = esc_html($plan_details);
     $special_req = esc_html($special_req);
 
@@ -72,7 +78,7 @@ function cpp_wizard_generate_pdf($caf_plan_id)
 
 }
 
-function cpp_build_intro_header($company_name, $effective_date, $plan_options_selected)
+function cpp_build_intro_header($employer, $restatement_effective_date, $plan_options_selected)
 {
     $component_titles = [
         'Pre-Tax Premiums' => 'PREMIUM PAYMENT ARRANGEMENT',
@@ -94,7 +100,7 @@ function cpp_build_intro_header($company_name, $effective_date, $plan_options_se
 
     // Company/Cover Page Heading
     $header_html .= '<div style="text-align: center; font-family: Times New Roman; font-size: 12pt; font-weight: bold; margin-top: 120pt;">'
-        . strtoupper($company_name) . '</div>';
+        . strtoupper($employer) . '</div>';
 
     // Intro Title Line
     $header_html .= '<div style="text-align: center; font-family: Times New Roman; font-size: 12pt; font-weight: normal; margin-top: 24pt;">'
@@ -114,7 +120,7 @@ function cpp_build_intro_header($company_name, $effective_date, $plan_options_se
 
     // Footer date line
     $header_html .= '<div style="text-align: center; font-family: Times New Roman; font-size: 12pt; font-weight: bold; margin-top: 36pt;">'
-        . 'As Amended and Restated ' . esc_html($effective_date) . '</div>';
+        . 'As Amended and Restated ' . esc_html($restatement_effective_date) . '</div>';
 
     // Close page
     $header_html .= '</div>';
@@ -125,8 +131,11 @@ function cpp_build_intro_header($company_name, $effective_date, $plan_options_se
 function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = false, $old_version = null, $is_preview = false)
 {
     // Fetch demographic tokens
-    $company_name = esc_html(get_post_meta($plan_id, '_cpp_company_name', true));
-    $effective_date = esc_html(get_post_meta($plan_id, '_cpp_effective_date', true));
+    $employer = esc_html(get_post_meta($plan_id, '_cpp_employer', true));
+    $restatement_effective_date = esc_html(get_post_meta($plan_id, '_cpp_restatement_effective_date', true));
+    $employer_address = esc_html(get_post_meta($plan_id, '_cpp_employer_address', true));
+    $claims_administrator = esc_html(get_post_meta($plan_id, '_cpp_claims_administrator', true));
+    $claims_administrator_address = esc_html(get_post_meta($plan_id, '_cpp_claims_administrator_address', true));
     $plan_options_selected_str = get_post_meta($plan_id, '_cpp_plan_options', true);
     $plan_options_selected = array_filter(explode(',', $plan_options_selected_str));
 
@@ -356,7 +365,7 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
             <button class="pdf-preview-expand-btn" onclick="expandPdfPreview()" title="Expand to fullscreen">⛶ Expand</button>
             <div class="pdf-preview-container" id="pdf-preview-container">';
         // Create intro page (page 1)
-        $intro_content = cpp_build_intro_header($company_name, $effective_date, $plan_options_selected);
+        $intro_content = cpp_build_intro_header($employer, $restatement_effective_date, $plan_options_selected);
         $html .= '<div class="pdf-preview-wrapper" data-page="1">';
         $html .= '<div class="pdf-preview-content intro-page">' . $intro_content . '</div>';
         $html .= '<div class="pdf-preview-page-number">Page 1</div>';
@@ -370,10 +379,12 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
         foreach ($plan_options_selected as $option) {
             $option = trim($option);
             if (!$redline) {
+                // Final version: show new content without redline markup
                 if (isset($blocks[$option])) {
                     $main_content .= $blocks[$option];
                 }
             } else {
+                // Redlined version: show redlined diff content
                 $old = isset($old_blocks[$option]) ? $old_blocks[$option] : '';
                 $new = isset($blocks[$option]) ? $blocks[$option] : '';
                 $main_content .= cpp_redline_template_regions_dmp($old, $new);
@@ -412,23 +423,23 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
             const modal = document.getElementById("pdf-preview-modal");
             const modalContent = document.getElementById("pdf-preview-modal-content");
             const originalContainer = document.getElementById("pdf-preview-container");
-            
+
             // Clone the content to the modal
             modalContent.innerHTML = originalContainer.innerHTML;
-            
+
             // Show the modal
             modal.classList.add("active");
-            
+
             // Prevent body scrolling
             document.body.style.overflow = "hidden";
         }
 
         function closePdfPreview() {
             const modal = document.getElementById("pdf-preview-modal");
-            
+
             // Hide the modal
             modal.classList.remove("active");
-            
+
             // Restore body scrolling
             document.body.style.overflow = "";
         }
@@ -437,7 +448,7 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
         document.addEventListener("click", function(event) {
             const modal = document.getElementById("pdf-preview-modal");
             const modalContainer = modal.querySelector(".pdf-preview-modal-container");
-            
+
             if (event.target === modal) {
                 closePdfPreview();
             }
@@ -554,7 +565,7 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
     } else {
         $html .= '<div class="pdf-preview-wrapper">';
         // Cover page
-        $html .= '<div class="intro-page">' . cpp_build_intro_header($company_name, $effective_date, $plan_options_selected) . '</div>';
+        $html .= '<div class="intro-page">' . cpp_build_intro_header($employer, $restatement_effective_date, $plan_options_selected) . '</div>';
 
         $blocks = $template_data[$version]['components'] ?? [];
         $old_blocks = $old_version ? ($template_data[$old_version]['components'] ?? []) : [];
@@ -563,10 +574,12 @@ function cpp_build_full_doc_html($plan_id, $template_data, $version, $redline = 
         foreach ($plan_options_selected as $option) {
             $option = trim($option);
             if (!$redline) {
+                // Final version: show new content without redline markup
                 if (isset($blocks[$option])) {
                     $html .= $blocks[$option];
                 }
             } else {
+                // Redlined version: show redlined diff content
                 $old = isset($old_blocks[$option]) ? $old_blocks[$option] : '';
                 $new = isset($blocks[$option]) ? $blocks[$option] : '';
                 $html .= cpp_redline_template_regions_dmp($old, $new);

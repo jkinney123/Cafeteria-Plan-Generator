@@ -1,4 +1,5 @@
 <?php
+// Updated template content to include new fields: employer, restatement_effective_date, employer_address, claims_administrator, and claims_administrator_address in the PDF templates.
 if (!defined('ABSPATH'))
     exit;
 
@@ -19,11 +20,13 @@ function cpp_get_template_versions()
                     . '<p><span class="cpp-template" data-key="test4">The Dependent Care Assistance Plan allows employees to pay for eligible dependent care expenses on a pre-tax basis. Employees must follow all IRS rules regarding reimbursements.</span></p>'
                     // Test 5: Substantial content change (should be full replacement)
                     . '<p><span class="cpp-template" data-key="test5">Employees may elect to contribute to a Health Savings Account (HSA), which allows tax-free contributions, growth, and withdrawals for qualified medical expenses.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s1">Eligible employees may participate in this Plan after completing 30 days of service.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s2">Benefits under this Plan are subject to annual limits as set by the IRS.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s3">Contributions are made on a pre-tax basis. Participation is voluntary.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s4">This Plan is offered by {{company_name}} and provides a range of healthcare options, including vision and dental.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s5">Employees may enroll in this Plan after completing 30 days of service. Claims must be submitted by March 31 for reimbursement.</span></p>',
+                    . '<p><span class="cpp-template" data-key="test_s1">This section allows employees at {{employer}} to pay health insurance premiums with pre-tax dollars, effective {{restatement_effective_date}}.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s2">Benefits under this Plan are subject to annual limits as set by the IRS. All changes to limits will be communicated to employees in advance.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s3">Contributions are made on a pre-tax basis.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s4">{{employer}} sponsors this Plan, giving employees multiple benefit choices such as dental and vision coverage.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s5">Employees are eligible to participate following 30 days of employment. Claims must be submitted by March 31 to be reimbursed.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s6">The employer address for plan administration purposes is: {{employer_address}}.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s7">Claims processing is handled by {{claims_administrator}}, located at {{claims_administrator_address}}.</span></p>',
                 'Health Flexible Spending Account (Health FSA)' => '<h3>Health Flexible Spending Account (Health FSA)</h3><p>The Health Flexible Spending Arrangement (Health FSA) reimburses eligible medical expenses, including dental and vision care, using pre-tax dollars.</p>',
                 'Health Savings Account (HSA)' => '<h3>Health Savings Account (HSA)</h3><p>Employees may elect to contribute to a Health Savings Account (HSA), which allows tax-free contributions, growth, and withdrawals for qualified medical expenses.</p>',
                 'Dependent Care Account' => '<h3>Dependent Care Account</h3><p>The Dependent Care Assistance Plan (Dependent Care FSA) reimburses qualifying child and dependent care costs to enable employees to work or seek employment.</p>',
@@ -43,11 +46,13 @@ function cpp_get_template_versions()
                     . '<p><span class="cpp-template" data-key="test4">The Dependent Care Assistance Plan reimburses employees for eligible dependent care expenses using pre-tax contributions. All reimbursements are subject to IRS rules and plan guidelines.</span></p>'
                     // Test 5: Substantial content change (should be full replacement)
                     . '<p><span class="cpp-template" data-key="test5">The Health Savings Account (HSA) program enables eligible employees to make contributions with pre-tax dollars. These funds may be used for qualified medical expenses, and the account balance can be carried forward from year to year.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s1">Eligible employees may participate in this Plan following completion of 30 days of service.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s1">This section allows employees at {{employer}} to pay health insurance premiums with pre-tax dollars, effective {{restatement_effective_date}}.</span></p>'
                     . '<p><span class="cpp-template" data-key="test_s2">Benefits under this Plan are subject to annual limits as set by the IRS. All changes to limits will be communicated to employees in advance.</span></p>'
                     . '<p><span class="cpp-template" data-key="test_s3">Contributions are made on a pre-tax basis.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s4">{{company_name}} sponsors this Plan, giving employees multiple benefit choices such as dental and vision coverage.</span></p>'
-                    . '<p><span class="cpp-template" data-key="test_s5">Employees are eligible to participate following 30 days of employment. Claims must be submitted by March 31 to be reimbursed.</span></p>',
+                    . '<p><span class="cpp-template" data-key="test_s4">{{employer}} sponsors this Plan, giving employees multiple benefit choices such as dental and vision coverage.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s5">Employees are eligible to participate following 30 days of employment. Claims must be submitted by March 31 to be reimbursed.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s6">The employer address for plan administration purposes is: {{employer_address}}.</span></p>'
+                    . '<p><span class="cpp-template" data-key="test_s7">Claims processing is handled by {{claims_administrator}}, located at {{claims_administrator_address}}.</span></p>',
                 'Health Flexible Spending Account (Health FSA)' => '<h3>Health Flexible Spending Account (Health FSA)</h3><p>Updated details about Health FSA...</p>',
                 'Health Savings Account (HSA)' => '<h3>Health Savings Account (HSA)</h3><p>Updated details about HSA...</p>',
                 'Dependent Care Account' => '<h3>Dependent Care Account</h3><p>Updated details about Dependent Care Account...</p>',

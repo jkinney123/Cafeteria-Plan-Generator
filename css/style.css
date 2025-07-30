@@ -25,7 +25,7 @@
     max-width: 600px;
     width: max-content;
     z-index: 1000;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .cpp-tooltip-trigger:hover::before {
@@ -57,7 +57,7 @@
     max-width: 350px;
     width: max-content;
     z-index: 1000;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     word-wrap: break-word;
 }
 
@@ -68,6 +68,46 @@
 
 .cpp-learn-more-btn:hover {
     color: #005177 !important;
+}
+
+/* Sectional Redlines Styling */
+.cpp-redline-section {
+    font-size: 14px;
+}
+
+.cpp-redline-section h3 {
+    color: #2c3e50;
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3498db;
+}
+
+.cpp-redline-section p {
+    margin: 12px 0;
+    text-align: justify;
+}
+
+.cpp-redline-section ins {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    text-decoration: none;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.cpp-redline-section del {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    text-decoration: line-through;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.cpp-redline-section .cpp-template {
+    display: block;
+    margin-bottom: 8px;
 }
 
 .cpp-learn-more-btn.expanded .dashicons {
@@ -84,6 +124,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

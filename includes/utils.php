@@ -4,17 +4,21 @@ if (!defined('ABSPATH'))
 
 function cpp_replace_tokens($html, $plan_id)
 {
-    // Fetch all needed meta
-    $company_name = esc_html(get_post_meta($plan_id, '_cpp_company_name', true));
-    $effective_date = esc_html(get_post_meta($plan_id, '_cpp_effective_date', true));
-    // Add more tokens here as needed
+    $employer = get_post_meta($plan_id, '_cpp_employer', true);
+    $restatement_effective_date = get_post_meta($plan_id, '_cpp_restatement_effective_date', true);
+    $employer_address = get_post_meta($plan_id, '_cpp_employer_address', true);
+    $claims_administrator = get_post_meta($plan_id, '_cpp_claims_administrator', true);
+    $claims_administrator_address = get_post_meta($plan_id, '_cpp_claims_administrator_address', true);
 
-    // Replace tokens in the HTML
-    $html = str_replace('{{company_name}}', $company_name, $html);
-    $html = str_replace('{{effective_date}}', $effective_date, $html);
-    // Add more replacements as needed
+    $tokens = [
+        '{{employer}}' => $employer,
+        '{{restatement_effective_date}}' => $restatement_effective_date,
+        '{{employer_address}}' => $employer_address,
+        '{{claims_administrator}}' => $claims_administrator,
+        '{{claims_administrator_address}}' => $claims_administrator_address,
+    ];
 
-    return $html;
+    return str_replace(array_keys($tokens), array_values($tokens), $html);
 }
 
 function cpp_sentence_split($text)

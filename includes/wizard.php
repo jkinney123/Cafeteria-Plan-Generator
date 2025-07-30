@@ -85,15 +85,33 @@ function cpp_get_wizard_steps()
             'fields' => [
                 [
                     'type' => 'text',
-                    'name' => 'company_name',
-                    'label' => 'Company Name',
-                    'tooltip' => 'The legal name of your company as it should appear on the cafeteria plan document.',
+                    'name' => 'employer',
+                    'label' => 'Employer',
+                    'tooltip' => 'The legal name of your employer as it should appear on the cafeteria plan document.',
                 ],
                 [
                     'type' => 'date',
-                    'name' => 'effective_date',
-                    'label' => 'Effective Date',
-                    'tooltip' => 'The date when your cafeteria plan becomes active. This is typically January 1st or the start of your plan year.',
+                    'name' => 'restatement_effective_date',
+                    'label' => 'Restatement Effective Date',
+                    'tooltip' => 'The date when your cafeteria plan restatement becomes active. This is typically January 1st or the start of your plan year.',
+                ],
+                [
+                    'type' => 'text',
+                    'name' => 'employer_address',
+                    'label' => 'Employer Address',
+                    'tooltip' => 'The complete address of the employer for plan documentation purposes.',
+                ],
+                [
+                    'type' => 'text',
+                    'name' => 'claims_administrator',
+                    'label' => 'Claims Administrator',
+                    'tooltip' => 'The name of the third-party administrator or entity responsible for processing claims.',
+                ],
+                [
+                    'type' => 'text',
+                    'name' => 'claims_administrator_address',
+                    'label' => 'Claims Administrator Address',
+                    'tooltip' => 'The complete address of the claims administrator.',
                 ],
             ],
         ],
@@ -762,16 +780,29 @@ function cpp_render_upgrade_flow($atts = [])
         ],
     ];
 
-    // Get user's plan options
+    // Get user's plan options and demographic data
     $plan_options_str = get_post_meta($plan_id, '_cpp_plan_options', true);
     $plan_options = array_filter(explode(',', $plan_options_str));
+
+    // Get demographic data for substitution
+    $employer = get_post_meta($plan_id, '_cpp_employer', true);
+    $restatement_effective_date = get_post_meta($plan_id, '_cpp_restatement_effective_date', true);
+    $employer_address = get_post_meta($plan_id, '_cpp_employer_address', true);
+    $claims_administrator = get_post_meta($plan_id, '_cpp_claims_administrator', true);
+    $claims_administrator_address = get_post_meta($plan_id, '_cpp_claims_administrator_address', true);
 
     // Build diff for each plan option
     $redlines = [];
     foreach ($plan_options as $opt) {
         $old = isset($all_versions[$current_version]['components'][$opt]) ? $all_versions[$current_version]['components'][$opt] : '';
         $new = isset($all_versions[$latest_version]['components'][$opt]) ? $all_versions[$latest_version]['components'][$opt] : '';
-        $redlines[$opt] = cpp_dmp_word_diff(strip_tags($old), strip_tags($new));
+
+        // Substitute demographic data in both old and new versions
+        $old = str_replace(['{{employer}}', '{{restatement_effective_date}}', '{{employer_address}}', '{{claims_administrator}}', '{{claims_administrator_address}}'], [$employer, $restatement_effective_date, $employer_address, $claims_administrator, $claims_administrator_address], $old);
+        $new = str_replace(['{{employer}}', '{{restatement_effective_date}}', '{{employer_address}}', '{{claims_administrator}}', '{{claims_administrator_address}}'], [$employer, $restatement_effective_date, $employer_address, $claims_administrator, $claims_administrator_address], $new);
+
+        // Use redline template regions function for better formatting
+        $redlines[$opt] = cpp_redline_template_regions_dmp($old, $new);
     }
 
     // Handle form POST (adoption)
@@ -941,18 +972,32 @@ function cpp_render_upgrade_flow($atts = [])
         </ul>
     </div>
 
-    <div class="cpp-upgrade-wrapper">
-        <h2>Cafeteria Plan Amendment Adoption</h2>
-        <p>Your current plan uses <strong><?php echo esc_html($all_versions[$current_version]['label']); ?></strong>. The
-            latest version is <strong><?php echo esc_html($all_versions[$latest_version]['label']); ?></strong>.</p>
+
+    <div class="cpp-upgrade-wrapper" style="padding: 16px; margin: 8px auto; max-width: 860px;">
+        <div class="cpp-upgrade-header"
+            style="text-align: center; margin-bottom: 8px; padding: 8px 16px; background: #f8f9fb; border-radius: 6px; border: 1px solid #e1e5e9;">
+            <h2
+                style="font-size: 1.3em; font-weight: 600; margin-bottom: 4px; color: #23374d; font-family: 'Source Serif 4', serif; letter-spacing: -0.3px;">
+                Cafeteria Plan Amendment Adoption</h2>
+            <p style="font-size: 0.85em; color: #4c5767; margin: 0; font-family: 'Literata', serif;">Your current plan uses
+                <strong style="color: #d6b874;"><?php echo esc_html($all_versions[$current_version]['label']); ?></strong>.
+                The latest version is <strong
+                    style="color: #d6b874;"><?php echo esc_html($all_versions[$latest_version]['label']); ?></strong>.
+            </p>
+        </div>
 
         <?php if ($current_step == 1): ?>
-            <h3>Step 1: Sectional Changes</h3>
-            <p>Review the specific changes made to each section of your plan:</p>
+            <div class="cpp-step-header" style="text-align: center; margin-bottom: 16px; padding: 12px 16px;">
+                <h3
+                    style="font-size: 1.4em; font-weight: 600; margin-bottom: 6px; color: #23374d; font-family: 'Source Serif 4', serif;">
+                    Step 1: Sectional Changes</h3>
+                <p style="font-size: 0.9em; color: #5a6c7d; margin: 0; font-family: 'Literata', serif;">Review the specific
+                    changes made to each section of your plan:</p>
+            </div>
             <?php foreach ($redlines as $section => $diff_html): ?>
-                <div style="margin-bottom: 32px;">
-                    <h4><?php echo esc_html($section); ?></h4>
-                    <div class="cpp-redline-section" style="border:1px solid #ccc; padding:12px; background:#f9f9f9;">
+                <div style="margin-bottom: 32px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                    <div class="cpp-redline-section"
+                        style="padding: 20px; background: #fff; line-height: 1.6; font-family: 'Literata', serif;">
                         <?php echo $diff_html; ?>
                     </div>
                 </div>
@@ -965,8 +1010,13 @@ function cpp_render_upgrade_flow($atts = [])
             </form>
 
         <?php elseif ($current_step == 2): ?>
-            <h3>Step 2: Full Document Preview</h3>
-            <p>Review the complete redlined document with all changes highlighted:</p>
+            <div class="cpp-step-header" style="text-align: center; margin-bottom: 16px; padding: 12px 16px;">
+                <h3
+                    style="font-size: 1.4em; font-weight: 600; margin-bottom: 6px; color: #23374d; font-family: 'Source Serif 4', serif;">
+                    Step 2: Full Document Preview</h3>
+                <p style="font-size: 0.9em; color: #5a6c7d; margin: 0; font-family: 'Literata', serif;">Review the complete
+                    redlined document with all changes highlighted:</p>
+            </div>
             <div style="width: 100%; max-width: 950px; margin: 20px auto;">
                 <?php echo $sectional_redline; ?>
             </div>
@@ -978,8 +1028,13 @@ function cpp_render_upgrade_flow($atts = [])
             </form>
 
         <?php elseif ($current_step == 3): ?>
-            <h3>Step 3: E-Signature & Adoption</h3>
-            <p>Please review and sign to adopt these amendments to your cafeteria plan:</p>
+            <div class="cpp-step-header" style="text-align: center; margin-bottom: 16px; padding: 12px 16px;">
+                <h3
+                    style="font-size: 1.4em; font-weight: 600; margin-bottom: 6px; color: #23374d; font-family: 'Source Serif 4', serif;">
+                    Step 3: E-Signature & Adoption</h3>
+                <p style="font-size: 0.9em; color: #5a6c7d; margin: 0; font-family: 'Literata', serif;">Please review and sign
+                    to adopt these amendments to your cafeteria plan:</p>
+            </div>
 
             <form method="post" style="margin-top:32px; border-top: 1px solid #ccc; padding-top:20px; text-align: center;">
                 <?php foreach ($messages as $msg)
